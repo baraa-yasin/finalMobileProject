@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ArrowRight, MapPin, Package, Truck } from 'lucide-react-native';
+import { ArrowRight, Calendar, Hash, MapPin, Package, User } from 'lucide-react-native';
 import { db } from '../../api/firebaseConfig';
 import { doc, getDoc } from 'firebase/firestore';
 
@@ -12,6 +12,26 @@ function formatArabicDate(iso?: string) {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return 'غير محدد';
   return d.toLocaleString('ar-EG', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+
+function formatCreatedAt(value: any) {
+  if (!value) return 'غير محدد';
+  const date = typeof value?.toDate === 'function' ? value.toDate() : new Date(value);
+  if (Number.isNaN(date.getTime())) return 'غير محدد';
+  return date.toLocaleString('ar-EG', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+
+function formatCoords(coords?: { latitude?: number; longitude?: number }) {
+  if (coords?.latitude == null || coords?.longitude == null) return 'غير محدد';
+  return `${coords.latitude.toFixed(5)}, ${coords.longitude.toFixed(5)}`;
+}
+
+function valueOrUnset(value?: string | number) {
+  return value ? String(value) : 'غير محدد';
+}
+
+function valueWithUnit(value: string | number | undefined, unit: string) {
+  return value ? `${value} ${unit}` : 'غير محدد';
 }
 
 function statusLabel(status: OrderStatus) {
@@ -104,7 +124,22 @@ export default function OrderDetailsScreen({ orderId, onBack }: { orderId: strin
               </View>
               <Text style={styles.orderId}>#{String(order.id).slice(0, 8).toUpperCase()}</Text>
             </View>
-            <Text style={styles.dateText}>{formatArabicDate(order.scheduledTime)}</Text>
+            <View style={styles.summaryRow}>
+              <Calendar color="#064e3b" size={16} />
+              <Text style={styles.dateText}>{formatArabicDate(order.scheduledTime)}</Text>
+            </View>
+          </View>
+
+          <View style={styles.card}>
+            <View style={styles.cardTitleRow}>
+              <Text style={styles.cardTitle}>بيانات الطلب</Text>
+              <Hash color="#064e3b" size={18} />
+            </View>
+
+            <View style={styles.kv}>
+              <Text style={styles.kvLabel}>تاريخ الإنشاء</Text>
+              <Text style={styles.kvValue}>{formatCreatedAt(order.createdAt)}</Text>
+            </View>
           </View>
 
           <View style={styles.card}>
@@ -117,11 +152,13 @@ export default function OrderDetailsScreen({ orderId, onBack }: { orderId: strin
               <Text style={styles.kvLabel}>من</Text>
               <Text style={styles.kvValue}>{order.pickup?.address || 'غير محدد'}</Text>
             </View>
+            <Text style={styles.coordText}>الإحداثيات: {formatCoords(order.pickup?.coords)}</Text>
             <View style={styles.divider} />
             <View style={styles.kv}>
               <Text style={styles.kvLabel}>إلى</Text>
               <Text style={styles.kvValue}>{order.dropoff?.address || 'غير محدد'}</Text>
             </View>
+            <Text style={styles.coordText}>الإحداثيات: {formatCoords(order.dropoff?.coords)}</Text>
           </View>
 
           <View style={styles.card}>
@@ -134,9 +171,29 @@ export default function OrderDetailsScreen({ orderId, onBack }: { orderId: strin
               <Text style={styles.muted}>لا توجد عناصر.</Text>
             ) : (
               (order.items || []).map((it: any, idx: number) => (
-                <View key={it.id || `${idx}`} style={styles.itemRow}>
-                  <Text style={styles.itemQty}>×{it.quantity || '1'}</Text>
-                  <Text style={styles.itemName}>{it.name || 'عنصر'}</Text>
+                <View key={it.id || `${idx}`} style={styles.itemCard}>
+                  <View style={styles.itemRow}>
+                    <Text style={styles.itemQty}>×{it.quantity || '1'}</Text>
+                    <Text style={styles.itemName}>{it.name || `عنصر #${idx + 1}`}</Text>
+                  </View>
+                  <View style={styles.itemMetaRow}>
+                    <View style={styles.itemMeta}>
+                      <Text style={styles.itemMetaLabel}>الوزن</Text>
+                      <Text style={styles.itemMetaValue}>{valueWithUnit(it.weight, 'كجم')}</Text>
+                    </View>
+                    <View style={styles.itemMeta}>
+                      <Text style={styles.itemMetaLabel}>الطول</Text>
+                      <Text style={styles.itemMetaValue}>{valueOrUnset(it.length)}</Text>
+                    </View>
+                    <View style={styles.itemMeta}>
+                      <Text style={styles.itemMetaLabel}>العرض</Text>
+                      <Text style={styles.itemMetaValue}>{valueOrUnset(it.width)}</Text>
+                    </View>
+                    <View style={styles.itemMeta}>
+                      <Text style={styles.itemMetaLabel}>الارتفاع</Text>
+                      <Text style={styles.itemMetaValue}>{valueOrUnset(it.height)}</Text>
+                    </View>
+                  </View>
                 </View>
               ))
             )}
@@ -144,8 +201,20 @@ export default function OrderDetailsScreen({ orderId, onBack }: { orderId: strin
 
           <View style={styles.card}>
             <View style={styles.cardTitleRow}>
+              <Text style={styles.cardTitle}>موعد النقل</Text>
+              <Calendar color="#064e3b" size={18} />
+            </View>
+
+            <View style={styles.kv}>
+              <Text style={styles.kvLabel}>التاريخ والوقت</Text>
+              <Text style={styles.kvValue}>{formatArabicDate(order.scheduledTime)}</Text>
+            </View>
+          </View>
+
+          <View style={styles.card}>
+            <View style={styles.cardTitleRow}>
               <Text style={styles.cardTitle}>السائق</Text>
-              <Truck color="#064e3b" size={18} />
+              <User color="#064e3b" size={18} />
             </View>
 
             {driver ? (
@@ -159,9 +228,16 @@ export default function OrderDetailsScreen({ orderId, onBack }: { orderId: strin
                   <Text style={styles.kvLabel}>النوع</Text>
                   <Text style={styles.kvValue}>{driver.type || 'غير محدد'}</Text>
                 </View>
+                <View style={styles.divider} />
+                <View style={styles.kv}>
+                  <Text style={styles.kvLabel}>التقييم</Text>
+                  <Text style={styles.kvValue}>{driver.rate || 'غير محدد'}</Text>
+                </View>
               </>
             ) : (
-              <Text style={styles.muted}>لم يتم تعيين سائق بعد.</Text>
+              <>
+                <Text style={styles.muted}>لم يتم العثور على بيانات السائق.</Text>
+              </>
             )}
           </View>
         </ScrollView>
@@ -199,7 +275,8 @@ const styles = StyleSheet.create({
   },
   topRow: { flexDirection: 'row-reverse', justifyContent: 'space-between', alignItems: 'center' },
   orderId: { fontSize: 12, fontWeight: '800', color: '#6B7280', letterSpacing: 1 },
-  dateText: { marginTop: 10, color: '#374151', textAlign: 'right', fontWeight: '700' },
+  summaryRow: { flexDirection: 'row-reverse', alignItems: 'center', gap: 8, marginTop: 10 },
+  dateText: { flex: 1, color: '#374151', textAlign: 'right', fontWeight: '700' },
 
   badge: { paddingHorizontal: 10, paddingVertical: 6, borderRadius: 999, borderWidth: 1 },
   badgeText: { fontSize: 12, fontWeight: '900' },
@@ -218,11 +295,37 @@ const styles = StyleSheet.create({
   kv: { flexDirection: 'row-reverse', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 },
   kvLabel: { color: '#6B7280', fontWeight: '800' },
   kvValue: { flex: 1, color: '#111827', textAlign: 'right', fontWeight: '800' },
+  coordText: { marginTop: 6, color: '#6B7280', textAlign: 'right', fontSize: 12, fontWeight: '700' },
   divider: { height: 1, backgroundColor: '#F3F4F6', marginVertical: 12 },
 
   muted: { color: '#6B7280', textAlign: 'right', fontWeight: '700' },
   itemRow: { flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 10 },
   itemName: { flex: 1, textAlign: 'right', fontWeight: '800', color: '#111827' },
   itemQty: { width: 60, textAlign: 'left', fontWeight: '900', color: '#064e3b' },
+  itemCard: {
+    backgroundColor: '#F9FAFB',
+    borderRadius: 14,
+    paddingHorizontal: 12,
+    paddingBottom: 12,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: '#EEF2F7',
+  },
+  itemMetaRow: {
+    flexDirection: 'row-reverse',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  itemMeta: {
+    minWidth: '22%',
+    flex: 1,
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 8,
+    alignItems: 'flex-end',
+  },
+  itemMetaLabel: { color: '#6B7280', fontSize: 11, fontWeight: '800' },
+  itemMetaValue: { color: '#111827', fontSize: 12, fontWeight: '900', marginTop: 2 },
 });
 

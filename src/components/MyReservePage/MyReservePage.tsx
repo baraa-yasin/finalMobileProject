@@ -173,7 +173,15 @@ const MyMovesScreen = ({ onNavigate }: any) => {
                   </View>
 
                   <View style={styles.cardFooter}>
-                    <TouchableOpacity style={styles.cancelOrderBtn} onPress={() => {
+                    <View style={styles.primaryActions}>
+                      <TouchableOpacity style={[styles.actionButton, styles.detailsButton]} onPress={() => onNavigate && onNavigate(`/order-details?orderId=${order.id}`)}>
+                        <Text style={styles.detailsButtonText}>تفاصيل الطلب</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity style={[styles.actionButton, styles.trackButton]} onPress={() => onNavigate && onNavigate(`/tracking?orderId=${order.id}`)}>
+                        <Text style={styles.trackButtonText}>تتبع الشحنة</Text>
+                      </TouchableOpacity>
+                    </View>
+                    <TouchableOpacity style={[styles.actionButton, styles.cancelOrderBtn]} onPress={() => {
                       Alert.alert(
                         'إلغاء الطلب',
                         'هل أنت متأكد من إلغاء هذا الطلب؟',
@@ -195,10 +203,7 @@ const MyMovesScreen = ({ onNavigate }: any) => {
                         ]
                       );
                     }}>
-                      <Text style={styles.cancelOrderBtnText}>إلغاء</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.trackButton} onPress={() => onNavigate && onNavigate(`/tracking?orderId=${order.id}`)}>
-                      <Text style={styles.trackButtonText}>تتبع الشحنة</Text>
+                      <Text style={styles.cancelOrderBtnText}>إلغاء الطلب</Text>
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -409,7 +414,7 @@ const styles = StyleSheet.create({
     color: '#191c1d',
   },
   pathContainer: {
-    flexDirection: 'row',
+    flexDirection: 'row-reverse',
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: 24,
@@ -439,12 +444,21 @@ const styles = StyleSheet.create({
     backgroundColor: '#e1e3e4',
   },
   cardFooter: {
-    flexDirection: 'row-reverse',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    gap: 10,
     paddingTop: 20,
     borderTopWidth: 1,
     borderTopColor: '#f3f4f5',
+  },
+  primaryActions: {
+    flexDirection: 'row-reverse',
+    alignItems: 'center',
+    gap: 10,
+  },
+  actionButton: {
+    minHeight: 44,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   avatarGroup: {
     flexDirection: 'row-reverse',
@@ -473,10 +487,10 @@ const styles = StyleSheet.create({
     color: '#555',
   },
   trackButton: {
+    flex: 1,
     backgroundColor: '#145300',
-    paddingHorizontal: 24,
+    paddingHorizontal: 12,
     paddingVertical: 10,
-    borderRadius: 12,
     shadowColor: '#145300',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
@@ -487,11 +501,24 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     fontSize: 14,
   },
-  cancelOrderBtn: {
-    backgroundColor: '#fef2f2',
-    paddingHorizontal: 20,
+  detailsButton: {
+    flex: 1,
+    backgroundColor: '#e8f7e1',
+    paddingHorizontal: 12,
     paddingVertical: 10,
-    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#aff592',
+  },
+  detailsButtonText: {
+    color: '#145300',
+    fontWeight: '700',
+    fontSize: 14,
+  },
+  cancelOrderBtn: {
+    width: '100%',
+    backgroundColor: '#fef2f2',
+    paddingHorizontal: 12,
+    paddingVertical: 10,
     borderWidth: 1,
     borderColor: '#fecaca',
   },

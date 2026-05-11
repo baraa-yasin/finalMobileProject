@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ImageBackground, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Menu, Truck, ArrowLeft, CheckCircle2 } from 'lucide-react-native';
+import { Menu, Truck, ArrowLeft, CheckCircle2, Building2 } from 'lucide-react-native';
 import { COLORS } from '@/src/constants/Theme';
 import MovesMenuDrawer from '@/src/components/MovesMenuDrawer';
 
@@ -15,9 +15,8 @@ const HomeScreen = ({ onNavigate }: any) => {
           <Menu color="#333" size={28} />
         </TouchableOpacity>
 
-        <Text style={styles.headerTitle}>الشاشة الرئيسية</Text>
+        <Text style={styles.headerTitle}>SwiftShift</Text>
 
-        <Text style={styles.brandName}>سويفت شيفت</Text>
       </View>
 
       <MovesMenuDrawer visible={menuOpen} onClose={() => setMenuOpen(false)} />
@@ -63,6 +62,21 @@ const HomeScreen = ({ onNavigate }: any) => {
           </TouchableOpacity>
         </View>
 
+        <TouchableOpacity
+          style={styles.companyDetailsButton}
+          onPress={() => onNavigate('/company-details')}
+          activeOpacity={0.9}
+        >
+          <ArrowLeft color="#1f3f1a" size={20} />
+          <View style={styles.companyDetailsTextWrap}>
+            <Text style={styles.companyDetailsButtonText}>تفاصيل الشركة</Text>
+            <Text style={styles.companyDetailsSubText}>تعرف اكثر عن سويفت شيفت لخدمات اللوجستية</Text>
+          </View>
+          <View style={styles.companyDetailsIconBox}>
+            <Building2 color="#1f3f1a" size={20} />
+          </View>
+        </TouchableOpacity>
+
       </ScrollView>
     </SafeAreaView>
   );
@@ -78,8 +92,8 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
   },
   brandName: { color: COLORS.textPrimary, fontSize: 18, fontWeight: 'bold' },
-  headerTitle: { color: '#002D62', fontSize: 22, fontWeight: 'bold' },
-  scrollContent: { padding: 20 },
+  headerTitle: { color: '#9be76f', fontSize: 22, fontWeight: 'bold' },
+  scrollContent: { padding: 20, paddingBottom: 130 },
   
   // تصميم البطاقة الخضراء
   promoCard: {
@@ -132,5 +146,41 @@ const styles = StyleSheet.create({
     gap: 15,
   },
   buttonText: { color: '#fff', fontSize: 18, fontWeight: 'bold' },
+  companyDetailsButton: {
+    marginTop: 20,
+    marginBottom: 10,
+    backgroundColor: '#e5e5e5',
+    borderRadius: 20,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  companyDetailsTextWrap: {
+    flex: 1,
+    marginHorizontal: 10,
+    alignItems: 'center',
+  },
+  companyDetailsButtonText: {
+    color: '#1f2a1f',
+    fontSize: 24,
+    fontWeight: '900',
+  },
+  companyDetailsSubText: {
+    color: '#6b7280',
+    fontSize: 12,
+    fontWeight: '700',
+    textAlign: 'center',
+    marginTop: 2,
+  },
+  companyDetailsIconBox: {
+    width: 48,
+    height: 48,
+    borderRadius: 14,
+    backgroundColor: '#9be76f',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 });
 export default HomeScreen;

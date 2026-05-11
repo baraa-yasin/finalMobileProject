@@ -19,7 +19,6 @@ export default function MovesMenuDrawer({
       // نرتب القائمة بحيث التنبيهات والحساب آخر شي
       ...navItems.filter((i) => i.route === '/'),
       ...navItems.filter((i) => i.route === '/moves'),
-      { icon: 'groups' as const, label: 'إدارة السائقين', route: '/drivers' },
       ...navItems.filter((i) => i.route === '/notifications'),
       ...navItems.filter((i) => i.route === '/profile'),
     ],
