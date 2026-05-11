@@ -4,6 +4,12 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 export default function OrderDetailsPage() {
   const router = useRouter();
   const { orderId } = useLocalSearchParams();
-  return <OrderDetailsScreen orderId={orderId as string} onBack={() => router.back()} />;
-}
 
+  return (
+    <OrderDetailsScreen
+      orderId={orderId as string}
+      onBack={() => router.back()}
+      onTrack={() => router.push(`/tracking?orderId=${orderId || ''}`)}
+    />
+  );
+}

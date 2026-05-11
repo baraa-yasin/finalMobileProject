@@ -1,248 +1,247 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Image,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ArrowRight, Calendar, Hash, MapPin, Package, User } from 'lucide-react-native';
-import { db } from '../../api/firebaseConfig';
+import {
+  Armchair,
+  ArrowRight,
+  BedDouble,
+  CalendarDays,
+  Clock3,
+  MessageCircle,
+  Navigation,
+  Phone,
+  Refrigerator,
+} from 'lucide-react-native';
 import { doc, getDoc } from 'firebase/firestore';
+import { db } from '../../api/firebaseConfig';
 
-type OrderStatus = 'pending' | 'active' | 'completed' | 'cancelled' | string;
+const DRIVER_IMAGE =
+  'https://lh3.googleusercontent.com/aida-public/AB6AXuDn6-BL8N2eTYEzIXUDENKNG17o_zlSD1zduEEplOmUj9WhXmQOivhsG_v1ItRF42aIrqgaF8v-KA5r5KWzjXuzvseDDlx_WMDIEjSUHtBRdMg5YYZauEvzsq8h6Ru7gt7nzsyP4P4UiLa1shpUB9PGHAcDt5BjnDTXxqxM92ou1FZmTDPw5sTQpxKr6Oe6nkWQYTS2WEBT5stVNb5F8oZ4r0J6IOZmONHRs60T63jvMZU1F37G5_Fces4AFITMHxzC00qt8s4z8LPi';
 
-function formatArabicDate(iso?: string) {
-  if (!iso) return 'غير محدد';
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return 'غير محدد';
-  return d.toLocaleString('ar-EG', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+type Props = {
+  orderId?: string;
+  onBack?: () => void;
+  onTrack?: () => void;
+};
+
+function formatDate(value: any) {
+  const date = value?.toDate ? value.toDate() : value ? new Date(value) : null;
+  if (!date || Number.isNaN(date.getTime())) return '14 أكتوبر، 2023';
+  return date.toLocaleDateString('ar-EG', { day: 'numeric', month: 'long', year: 'numeric' });
 }
 
-function formatCreatedAt(value: any) {
-  if (!value) return 'غير محدد';
-  const date = typeof value?.toDate === 'function' ? value.toDate() : new Date(value);
-  if (Number.isNaN(date.getTime())) return 'غير محدد';
-  return date.toLocaleString('ar-EG', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+function formatTime(value: any) {
+  const date = value?.toDate ? value.toDate() : value ? new Date(value) : null;
+  if (!date || Number.isNaN(date.getTime())) return '11:30 صباحاً';
+  return date.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
 }
 
-function formatCoords(coords?: { latitude?: number; longitude?: number }) {
-  if (coords?.latitude == null || coords?.longitude == null) return 'غير محدد';
-  return `${coords.latitude.toFixed(5)}, ${coords.longitude.toFixed(5)}`;
+function statusLabel(status?: string) {
+  if (status === 'pending') return 'بانتظار الموافقة';
+  if (status === 'completed') return 'مكتملة';
+  if (status === 'cancelled') return 'ملغاة';
+  return 'نشط الآن';
 }
 
-function valueOrUnset(value?: string | number) {
-  return value ? String(value) : 'غير محدد';
+function itemIcon(name?: string) {
+  const normalized = String(name || '').toLowerCase();
+  if (normalized.includes('سرير') || normalized.includes('bed')) return BedDouble;
+  if (normalized.includes('ثلاجة') || normalized.includes('fridge')) return Refrigerator;
+  return Armchair;
 }
 
-function valueWithUnit(value: string | number | undefined, unit: string) {
-  return value ? `${value} ${unit}` : 'غير محدد';
-}
-
-function statusLabel(status: OrderStatus) {
-  switch (status) {
-    case 'pending':
-      return 'بانتظار الموافقة';
-    case 'active':
-      return 'قيد التنفيذ';
-    case 'completed':
-      return 'مكتملة';
-    case 'cancelled':
-      return 'ملغاة';
-    default:
-      return status || 'غير معروف';
-  }
-}
-
-function statusStyle(status: OrderStatus) {
-  if (status === 'cancelled') return { bg: '#FEF2F2', border: '#FECACA', fg: '#DC2626' };
-  if (status === 'completed') return { bg: '#ECFDF5', border: '#A7F3D0', fg: '#065F46' };
-  if (status === 'active') return { bg: '#EFF6FF', border: '#BFDBFE', fg: '#1D4ED8' };
-  return { bg: '#F3F4F6', border: '#E5E7EB', fg: '#374151' };
-}
-
-export default function OrderDetailsScreen({ orderId, onBack }: { orderId: string; onBack?: () => void }) {
-  const [loading, setLoading] = useState(true);
+export default function OrderDetailsScreen({ orderId, onBack, onTrack }: Props) {
   const [order, setOrder] = useState<any>(null);
   const [driver, setDriver] = useState<any>(null);
+  const [loading, setLoading] = useState(Boolean(orderId));
 
   useEffect(() => {
-    const run = async () => {
+    let mounted = true;
+
+    const loadOrder = async () => {
       try {
-        if (!orderId) {
-          setOrder(null);
-          return;
-        }
-        const orderRef = doc(db, 'orders', orderId);
-        const orderSnap = await getDoc(orderRef);
-        if (!orderSnap.exists()) {
-          setOrder(null);
-          return;
-        }
+        if (!orderId) return;
+
+        const orderSnap = await getDoc(doc(db, 'orders', orderId));
+        if (!mounted || !orderSnap.exists()) return;
+
         const orderData = { id: orderSnap.id, ...orderSnap.data() };
         setOrder(orderData);
 
-        const dId = (orderData as any).driverId;
-        if (dId) {
-          const driverSnap = await getDoc(doc(db, 'drivers', dId));
-          setDriver(driverSnap.exists() ? { id: driverSnap.id, ...driverSnap.data() } : null);
-        } else {
-          setDriver(null);
+        if ((orderData as any).driverId) {
+          const driverSnap = await getDoc(doc(db, 'drivers', (orderData as any).driverId));
+          if (mounted && driverSnap.exists()) {
+            setDriver({ id: driverSnap.id, ...driverSnap.data() });
+          }
         }
       } finally {
-        setLoading(false);
+        if (mounted) setLoading(false);
       }
     };
-    run();
+
+    loadOrder();
+    return () => {
+      mounted = false;
+    };
   }, [orderId]);
 
-  const status = (order?.status || '') as OrderStatus;
-  const badge = useMemo(() => statusStyle(status), [status]);
+  const items = useMemo(() => {
+    const orderItems = Array.isArray(order?.items) ? order.items : [];
+    if (orderItems.length > 0) return orderItems;
+    return [
+      { name: 'كنبة مزدوجة', quantity: 2 },
+      { name: 'سرير ملكي', quantity: 1 },
+      { name: 'ثلاجة حجم كبير', quantity: 2 },
+    ];
+  }, [order]);
+
+  const itemCount = items.reduce((sum: number, item: any) => sum + Number(item.quantity || 1), 0);
+  const shortId = order?.id ? `#${String(order.id).slice(0, 8).toUpperCase()}` : '#SF-99281';
 
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" />
 
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={onBack}>
-          <ArrowRight color="#064e3b" size={24} />
+        <TouchableOpacity style={styles.headerButton} onPress={onBack}>
+          <ArrowRight color="#0b3a00" size={22} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>تفاصيل الطلب</Text>
-        <View style={{ width: 40 }} />
+        <Text style={styles.headerTitle}>تفاصيل النقلة</Text>
+        <View style={styles.headerSpacer} />
       </View>
 
-      {loading ? (
-        <View style={styles.center}>
-          <ActivityIndicator size="large" color="#064e3b" />
-        </View>
-      ) : !order ? (
-        <View style={styles.center}>
-          <Text style={styles.emptyTitle}>الطلب غير موجود</Text>
-          <Text style={styles.emptySub}>قد يكون تم حذفه أو رقم الطلب غير صحيح.</Text>
-        </View>
-      ) : (
-        <ScrollView contentContainerStyle={styles.scroll}>
-          <View style={styles.topCard}>
-            <View style={styles.topRow}>
-              <View style={[styles.badge, { backgroundColor: badge.bg, borderColor: badge.border }]}>
-                <Text style={[styles.badgeText, { color: badge.fg }]}>{statusLabel(status)}</Text>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+      >
+        {loading ? (
+          <ActivityIndicator color="#0b3a00" size="large" style={styles.loader} />
+        ) : (
+          <>
+            <View style={styles.statusRow}>
+              <View style={styles.orderNumber}>
+                <Text style={styles.label}>رقم الطلب</Text>
+                <Text style={styles.orderCode}>{shortId}</Text>
               </View>
-              <Text style={styles.orderId}>#{String(order.id).slice(0, 8).toUpperCase()}</Text>
-            </View>
-            <View style={styles.summaryRow}>
-              <Calendar color="#064e3b" size={16} />
-              <Text style={styles.dateText}>{formatArabicDate(order.scheduledTime)}</Text>
-            </View>
-          </View>
-
-          <View style={styles.card}>
-            <View style={styles.cardTitleRow}>
-              <Text style={styles.cardTitle}>بيانات الطلب</Text>
-              <Hash color="#064e3b" size={18} />
+              <View style={styles.statusBadge}>
+                <Text style={styles.statusText}>{statusLabel(order?.status)}</Text>
+              </View>
             </View>
 
-            <View style={styles.kv}>
-              <Text style={styles.kvLabel}>تاريخ الإنشاء</Text>
-              <Text style={styles.kvValue}>{formatCreatedAt(order.createdAt)}</Text>
-            </View>
-          </View>
-
-          <View style={styles.card}>
-            <View style={styles.cardTitleRow}>
-              <Text style={styles.cardTitle}>الموقع والوجهة</Text>
-              <MapPin color="#064e3b" size={18} />
-            </View>
-
-            <View style={styles.kv}>
-              <Text style={styles.kvLabel}>من</Text>
-              <Text style={styles.kvValue}>{order.pickup?.address || 'غير محدد'}</Text>
-            </View>
-            <Text style={styles.coordText}>الإحداثيات: {formatCoords(order.pickup?.coords)}</Text>
-            <View style={styles.divider} />
-            <View style={styles.kv}>
-              <Text style={styles.kvLabel}>إلى</Text>
-              <Text style={styles.kvValue}>{order.dropoff?.address || 'غير محدد'}</Text>
-            </View>
-            <Text style={styles.coordText}>الإحداثيات: {formatCoords(order.dropoff?.coords)}</Text>
-          </View>
-
-          <View style={styles.card}>
-            <View style={styles.cardTitleRow}>
-              <Text style={styles.cardTitle}>المنقولات</Text>
-              <Package color="#064e3b" size={18} />
+            <View style={styles.routeCard}>
+              <View style={styles.routeLine}>
+                <View style={styles.pickupDot} />
+                <View style={styles.line} />
+                <View style={styles.dropoffDot} />
+              </View>
+              <View style={styles.routeContent}>
+                <View>
+                  <Text style={styles.routeLabel}>موقع الاستلام</Text>
+                  <Text style={styles.routeValue}>
+                    {order?.pickup?.address || 'حي الصحافة، شارع العليا، الرياض'}
+                  </Text>
+                </View>
+                <View>
+                  <Text style={styles.routeLabel}>وجهة الوصول</Text>
+                  <Text style={styles.routeValue}>
+                    {order?.dropoff?.address || 'حي الياسمين، طريق الثمامة، الرياض'}
+                  </Text>
+                </View>
+              </View>
             </View>
 
-            {(order.items || []).length === 0 ? (
-              <Text style={styles.muted}>لا توجد عناصر.</Text>
-            ) : (
-              (order.items || []).map((it: any, idx: number) => (
-                <View key={it.id || `${idx}`} style={styles.itemCard}>
-                  <View style={styles.itemRow}>
-                    <Text style={styles.itemQty}>×{it.quantity || '1'}</Text>
-                    <Text style={styles.itemName}>{it.name || `عنصر #${idx + 1}`}</Text>
+            <View style={styles.infoGrid}>
+              <InfoTile
+                icon={<CalendarDays color="#0b3a00" size={21} />}
+                label="التاريخ"
+                value={formatDate(order?.scheduledTime)}
+              />
+              <InfoTile
+                icon={<Clock3 color="#0b3a00" size={21} />}
+                label="الوقت المقدر"
+                value={formatTime(order?.scheduledTime)}
+              />
+            </View>
+
+            <View style={styles.inventoryCard}>
+              <View style={styles.cardTitleRow}>
+                <Text style={styles.cardTitle}>قائمة المنقولات</Text>
+                <View style={styles.countBadge}>
+                  <Text style={styles.countText}>{itemCount} قطع</Text>
+                </View>
+              </View>
+
+              {items.map((item: any, index: number) => {
+                const Icon = itemIcon(item.name);
+                return (
+                  <View key={item.id || `${item.name}-${index}`} style={styles.itemRow}>
+                    <View style={styles.itemLeft}>
+                      <View style={styles.itemIconBox}>
+                        <Icon color="#9ca3af" size={24} />
+                      </View>
+                      <Text style={styles.itemName}>{item.name || `عنصر ${index + 1}`}</Text>
+                    </View>
+                    <Text style={styles.itemQuantity}>× {item.quantity || 1}</Text>
                   </View>
-                  <View style={styles.itemMetaRow}>
-                    <View style={styles.itemMeta}>
-                      <Text style={styles.itemMetaLabel}>الوزن</Text>
-                      <Text style={styles.itemMetaValue}>{valueWithUnit(it.weight, 'كجم')}</Text>
-                    </View>
-                    <View style={styles.itemMeta}>
-                      <Text style={styles.itemMetaLabel}>الطول</Text>
-                      <Text style={styles.itemMetaValue}>{valueOrUnset(it.length)}</Text>
-                    </View>
-                    <View style={styles.itemMeta}>
-                      <Text style={styles.itemMetaLabel}>العرض</Text>
-                      <Text style={styles.itemMetaValue}>{valueOrUnset(it.width)}</Text>
-                    </View>
-                    <View style={styles.itemMeta}>
-                      <Text style={styles.itemMetaLabel}>الارتفاع</Text>
-                      <Text style={styles.itemMetaValue}>{valueOrUnset(it.height)}</Text>
-                    </View>
-                  </View>
-                </View>
-              ))
-            )}
-          </View>
-
-          <View style={styles.card}>
-            <View style={styles.cardTitleRow}>
-              <Text style={styles.cardTitle}>موعد النقل</Text>
-              <Calendar color="#064e3b" size={18} />
+                );
+              })}
             </View>
 
-            <View style={styles.kv}>
-              <Text style={styles.kvLabel}>التاريخ والوقت</Text>
-              <Text style={styles.kvValue}>{formatArabicDate(order.scheduledTime)}</Text>
+            <View style={styles.driverCard}>
+              <View style={styles.driverInfo}>
+                <Image
+                  source={{ uri: driver?.avatar || DRIVER_IMAGE }}
+                  style={styles.driverImage}
+                />
+                <View style={styles.driverText}>
+                  <Text style={styles.driverEyebrow}>السائق</Text>
+                  <Text style={styles.driverName}>{driver?.name || 'أحمد منصور'}</Text>
+                  <Text style={styles.driverVehicle}>
+                    {driver?.type || 'شاحنة متوسطة'} - طراز 2023
+                  </Text>
+                </View>
+              </View>
+              <View style={styles.driverActions}>
+                <TouchableOpacity style={styles.driverActionButton}>
+                  <Phone color="#fff" size={19} />
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.driverActionButton}>
+                  <MessageCircle color="#fff" size={19} />
+                </TouchableOpacity>
+              </View>
             </View>
-          </View>
+          </>
+        )}
+      </ScrollView>
 
-          <View style={styles.card}>
-            <View style={styles.cardTitleRow}>
-              <Text style={styles.cardTitle}>السائق</Text>
-              <User color="#064e3b" size={18} />
-            </View>
-
-            {driver ? (
-              <>
-                <View style={styles.kv}>
-                  <Text style={styles.kvLabel}>الاسم</Text>
-                  <Text style={styles.kvValue}>{driver.name || 'غير محدد'}</Text>
-                </View>
-                <View style={styles.divider} />
-                <View style={styles.kv}>
-                  <Text style={styles.kvLabel}>النوع</Text>
-                  <Text style={styles.kvValue}>{driver.type || 'غير محدد'}</Text>
-                </View>
-                <View style={styles.divider} />
-                <View style={styles.kv}>
-                  <Text style={styles.kvLabel}>التقييم</Text>
-                  <Text style={styles.kvValue}>{driver.rate || 'غير محدد'}</Text>
-                </View>
-              </>
-            ) : (
-              <>
-                <Text style={styles.muted}>لم يتم العثور على بيانات السائق.</Text>
-              </>
-            )}
-          </View>
-        </ScrollView>
-      )}
+      <View style={styles.bottomAction}>
+        <TouchableOpacity style={styles.trackButton} onPress={onTrack} activeOpacity={0.88}>
+          <Navigation color="#fff" fill="#fff" size={22} />
+          <Text style={styles.trackButtonText}>تتبع النقلة</Text>
+        </TouchableOpacity>
+      </View>
     </SafeAreaView>
+  );
+}
+
+function InfoTile({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
+  return (
+    <View style={styles.infoTile}>
+      <View style={styles.infoIcon}>{icon}</View>
+      <View style={styles.infoText}>
+        <Text style={styles.infoLabel}>{label}</Text>
+        <Text style={styles.infoValue}>{value}</Text>
+      </View>
+    </View>
   );
 }
 
@@ -250,82 +249,166 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f8f9fa' },
   header: {
     height: 64,
+    backgroundColor: 'rgba(255,255,255,0.94)',
     flexDirection: 'row-reverse',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    paddingHorizontal: 24,
   },
-  headerTitle: { fontSize: 18, fontWeight: '800', color: '#064e3b' },
-  backButton: { padding: 8, borderRadius: 20, backgroundColor: '#f3f4f6' },
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 20 },
-  emptyTitle: { fontSize: 16, fontWeight: '800', color: '#111827' },
-  emptySub: { marginTop: 6, color: '#6B7280', textAlign: 'center' },
-  scroll: { padding: 20, paddingBottom: 40 },
-
-  topCard: {
-    backgroundColor: '#fff',
+  headerButton: {
+    width: 40,
+    height: 40,
     borderRadius: 20,
-    padding: 18,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(11, 58, 0, 0.05)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#f3f4f5',
   },
-  topRow: { flexDirection: 'row-reverse', justifyContent: 'space-between', alignItems: 'center' },
-  orderId: { fontSize: 12, fontWeight: '800', color: '#6B7280', letterSpacing: 1 },
-  summaryRow: { flexDirection: 'row-reverse', alignItems: 'center', gap: 8, marginTop: 10 },
-  dateText: { flex: 1, color: '#374151', textAlign: 'right', fontWeight: '700' },
-
-  badge: { paddingHorizontal: 10, paddingVertical: 6, borderRadius: 999, borderWidth: 1 },
-  badgeText: { fontSize: 12, fontWeight: '900' },
-
-  card: {
-    backgroundColor: '#fff',
-    borderRadius: 20,
-    padding: 18,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(11, 58, 0, 0.05)',
-  },
-  cardTitleRow: { flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 },
-  cardTitle: { fontSize: 15, fontWeight: '900', color: '#064e3b' },
-
-  kv: { flexDirection: 'row-reverse', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 },
-  kvLabel: { color: '#6B7280', fontWeight: '800' },
-  kvValue: { flex: 1, color: '#111827', textAlign: 'right', fontWeight: '800' },
-  coordText: { marginTop: 6, color: '#6B7280', textAlign: 'right', fontSize: 12, fontWeight: '700' },
-  divider: { height: 1, backgroundColor: '#F3F4F6', marginVertical: 12 },
-
-  muted: { color: '#6B7280', textAlign: 'right', fontWeight: '700' },
-  itemRow: { flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 10 },
-  itemName: { flex: 1, textAlign: 'right', fontWeight: '800', color: '#111827' },
-  itemQty: { width: 60, textAlign: 'left', fontWeight: '900', color: '#064e3b' },
-  itemCard: {
-    backgroundColor: '#F9FAFB',
-    borderRadius: 14,
-    paddingHorizontal: 12,
-    paddingBottom: 12,
-    marginBottom: 10,
-    borderWidth: 1,
-    borderColor: '#EEF2F7',
-  },
-  itemMetaRow: {
+  headerTitle: { color: '#0b3a00', fontSize: 18, fontWeight: '800' },
+  headerSpacer: { width: 40 },
+  scrollContent: { paddingHorizontal: 24, paddingTop: 24, paddingBottom: 130 },
+  loader: { marginTop: 80 },
+  statusRow: {
     flexDirection: 'row-reverse',
-    flexWrap: 'wrap',
-    gap: 8,
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 28,
   },
-  itemMeta: {
-    minWidth: '22%',
+  orderNumber: { alignItems: 'flex-end', gap: 4 },
+  label: { color: '#41493c', fontSize: 13, fontWeight: '600' },
+  orderCode: { color: '#191c1d', fontSize: 18, fontWeight: '900' },
+  statusBadge: {
+    backgroundColor: '#145300',
+    paddingHorizontal: 16,
+    paddingVertical: 7,
+    borderRadius: 999,
+  },
+  statusText: { color: '#84c769', fontSize: 12, fontWeight: '900' },
+  routeCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 24,
+    padding: 24,
+    flexDirection: 'row-reverse',
+    gap: 16,
+    marginBottom: 16,
+  },
+  routeLine: { alignItems: 'center', paddingVertical: 4 },
+  pickupDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#94d878',
+    borderWidth: 4,
+    borderColor: '#ecfdf5',
+  },
+  line: { width: 2, flex: 1, backgroundColor: '#e2e8f0', marginVertical: 5 },
+  dropoffDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#0b3a00',
+    borderWidth: 4,
+    borderColor: '#ecfdf5',
+  },
+  routeContent: { flex: 1, gap: 24, alignItems: 'flex-end' },
+  routeLabel: { color: '#41493c', fontSize: 12, fontWeight: '800', marginBottom: 4 },
+  routeValue: { color: '#191c1d', fontSize: 16, fontWeight: '900', lineHeight: 23, textAlign: 'right' },
+  infoGrid: { flexDirection: 'row-reverse', gap: 12, marginBottom: 16 },
+  infoTile: {
     flex: 1,
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    paddingVertical: 8,
-    paddingHorizontal: 8,
-    alignItems: 'flex-end',
+    minHeight: 76,
+    backgroundColor: '#f3f4f5',
+    borderRadius: 24,
+    padding: 14,
+    flexDirection: 'row-reverse',
+    alignItems: 'center',
+    gap: 10,
   },
-  itemMetaLabel: { color: '#6B7280', fontSize: 11, fontWeight: '800' },
-  itemMetaValue: { color: '#111827', fontSize: 12, fontWeight: '900', marginTop: 2 },
+  infoIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#fff',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  infoText: { flex: 1, alignItems: 'flex-end' },
+  infoLabel: { color: '#41493c', fontSize: 10, fontWeight: '900' },
+  infoValue: { color: '#191c1d', fontSize: 13, fontWeight: '900', marginTop: 3, textAlign: 'right' },
+  inventoryCard: { backgroundColor: '#fff', borderRadius: 24, padding: 24, marginBottom: 16 },
+  cardTitleRow: {
+    flexDirection: 'row-reverse',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 20,
+  },
+  cardTitle: { color: '#191c1d', fontSize: 18, fontWeight: '900' },
+  countBadge: { backgroundColor: '#ecfdf5', paddingHorizontal: 12, paddingVertical: 5, borderRadius: 999 },
+  countText: { color: '#0b3a00', fontSize: 12, fontWeight: '900' },
+  itemRow: {
+    minHeight: 72,
+    backgroundColor: '#f8f9fa',
+    borderRadius: 16,
+    padding: 12,
+    flexDirection: 'row-reverse',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  itemLeft: { flexDirection: 'row-reverse', alignItems: 'center', gap: 12, flex: 1 },
+  itemIconBox: {
+    width: 48,
+    height: 48,
+    borderRadius: 16,
+    backgroundColor: '#fff',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  itemName: { color: '#191c1d', fontSize: 15, fontWeight: '800', flex: 1, textAlign: 'right' },
+  itemQuantity: { color: '#0b3a00', fontSize: 16, fontWeight: '900', marginRight: 8 },
+  driverCard: {
+    backgroundColor: '#0b3a00',
+    borderRadius: 24,
+    padding: 20,
+    flexDirection: 'row-reverse',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  driverInfo: { flexDirection: 'row-reverse', alignItems: 'center', gap: 14, flex: 1 },
+  driverImage: { width: 56, height: 56, borderRadius: 28, borderWidth: 2, borderColor: 'rgba(52, 211, 153, 0.35)' },
+  driverText: { flex: 1, alignItems: 'flex-end' },
+  driverEyebrow: { color: '#6ee7b7', fontSize: 10, fontWeight: '900' },
+  driverName: { color: '#fff', fontSize: 18, fontWeight: '900', marginTop: 2 },
+  driverVehicle: { color: 'rgba(209, 250, 229, 0.78)', fontSize: 12, marginTop: 2, textAlign: 'right' },
+  driverActions: { flexDirection: 'row-reverse', gap: 8 },
+  driverActionButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#065f46',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  bottomAction: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(255,255,255,0.95)',
+    paddingHorizontal: 24,
+    paddingTop: 18,
+    paddingBottom: 28,
+    borderTopLeftRadius: 36,
+    borderTopRightRadius: 36,
+  },
+  trackButton: {
+    height: 64,
+    borderRadius: 24,
+    backgroundColor: '#0b3a00',
+    flexDirection: 'row-reverse',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+  },
+  trackButtonText: { color: '#fff', fontSize: 18, fontWeight: '900' },
 });
-
