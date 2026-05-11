@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, 
-  SafeAreaView, Alert, ActivityIndicator, Modal, Platform 
+  View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Image,
+   Alert, ActivityIndicator, Modal, Platform 
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 /** المكتبات **/
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -16,7 +17,24 @@ import {
 /** الإعدادات المحلية **/
 import { COLORS } from '../../constants/Theme';
 import { db, auth } from '../../api/firebaseConfig';
-import { collection, addDoc, serverTimestamp, query, where, getDocs } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, query, where, onSnapshot } from 'firebase/firestore';
+
+const getDriverAvatarUrl = (driver: any): string | null => {
+  const raw =
+    driver?.avatar ||
+    driver?.avatarUrl ||
+    driver?.photoURL ||
+    driver?.photoUrl ||
+    driver?.image ||
+    driver?.imageUrl ||
+    '';
+
+  if (typeof raw !== 'string') return null;
+  const trimmed = raw.trim();
+  if (!trimmed) return null;
+  if (!/^https?:\/\//i.test(trimmed)) return null;
+  return encodeURI(trimmed);
+};
 
 export const BookingScreen = ({ onBack }: any) => {
   const [loading, setLoading] = useState(false);
@@ -47,16 +65,26 @@ export const BookingScreen = ({ onBack }: any) => {
 
   // جلب السائقين من Firestore عند تحميل الصفحة
   useEffect(() => {
-    const fetchDrivers = async () => {
-      try {
-        const q = query(collection(db, "drivers"), where("active", "==", true));
-        const snap = await getDocs(q);
-        const list = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const q = query(collection(db, "drivers"), where("active", "==", true));
+    const unsub = onSnapshot(
+      q,
+      (snap) => {
+        const list = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
         setDrivers(list);
-        if (list.length > 0) setSelectedDriverId(list[0].id);
-      } catch (e) { console.error("Error fetching drivers:", e); }
-    };
-    fetchDrivers();
+
+        setSelectedDriverId((prev) => {
+          if (!list.length) return null;
+          if (!prev) return list[0].id;
+          const stillExists = list.some((x: any) => x.id === prev);
+          return stillExists ? prev : list[0].id;
+        });
+      },
+      (err) => {
+        console.error("Error fetching drivers:", err);
+      }
+    );
+
+    return () => unsub();
   }, []);
 
   /** وظائف الخريطة **/
@@ -222,7 +250,13 @@ export const BookingScreen = ({ onBack }: any) => {
                 <Text style={styles.driverName}>{driver.name}</Text>
                 <Text style={styles.driverType}>{driver.type}</Text>
               </View>
-              <User color="#333" size={24} />
+              {getDriverAvatarUrl(driver) ? (
+                <Image source={{ uri: getDriverAvatarUrl(driver)! }} style={styles.driverAvatar} />
+              ) : (
+                <View style={styles.driverAvatarFallback}>
+                  <User color="#333" size={24} />
+                </View>
+              )}
               {selectedDriverId === driver.id && <View style={styles.checkBadge}><CheckCircle2 color={COLORS.primary} size={16} /></View>}
             </TouchableOpacity>
           ))
@@ -281,6 +315,15 @@ const styles = StyleSheet.create({
   driverName: { fontWeight: 'bold', fontSize: 15 },
   driverType: { color: '#888', fontSize: 11 },
   rateText: { fontWeight: 'bold', fontSize: 14 },
+  driverAvatar: { width: 40, height: 40, borderRadius: 20 },
+  driverAvatarFallback: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#F3F4F6',
+  },
   checkBadge: { position: 'absolute', top: 8, left: 8 },
   submitButton: { backgroundColor: '#0A2900', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', padding: 20, borderRadius: 20, marginTop: 25, gap: 10 },
   submitButtonText: { color: '#fff', fontSize: 17, fontWeight: 'bold' },

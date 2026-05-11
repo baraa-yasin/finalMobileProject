@@ -1,20 +1,26 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ImageBackground, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Menu, Truck, ArrowLeft, CheckCircle2 } from 'lucide-react-native';
 import { COLORS } from '@/src/constants/Theme';
+import MovesMenuDrawer from '@/src/components/MovesMenuDrawer';
 
 const HomeScreen = ({ onNavigate }: any) => {
+  const [menuOpen, setMenuOpen] = useState(false);
   return (
     <SafeAreaView style={styles.container}>
       {/* 1. Header العلوي */}
       <View style={styles.header}>
-        <Text style={styles.brandName}>سويفت شيفت</Text>
-        <Text style={styles.headerTitle}>الشاشة الرئيسية</Text>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => setMenuOpen(true)}>
           <Menu color="#333" size={28} />
         </TouchableOpacity>
+
+        <Text style={styles.headerTitle}>الشاشة الرئيسية</Text>
+
+        <Text style={styles.brandName}>سويفت شيفت</Text>
       </View>
+
+      <MovesMenuDrawer visible={menuOpen} onClose={() => setMenuOpen(false)} />
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         
@@ -49,12 +55,12 @@ const HomeScreen = ({ onNavigate }: any) => {
           </Text>
           
           <TouchableOpacity 
-  style={styles.mainButton}
-  onPress={() => onNavigate('/booking')} // <--- غيرنا المسار هنا ليفتح شاشة الحجز الجديدة
->
-  <ArrowLeft color="#fff" size={22} />
-  <Text style={styles.buttonText}>ابدأ عملية الحجز</Text>
-</TouchableOpacity>
+             style={styles.mainButton}
+             onPress={() => onNavigate('/booking')} // <--- غيرنا المسار هنا ليفتح شاشة الحجز الجديدة
+          >
+              <ArrowLeft color="#fff" size={22} />
+              <Text style={styles.buttonText}>ابدأ عملية الحجز</Text>
+          </TouchableOpacity>
         </View>
 
       </ScrollView>
@@ -72,7 +78,7 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
   },
   brandName: { color: COLORS.textPrimary, fontSize: 18, fontWeight: 'bold' },
-  headerTitle: { color: '#002D62', fontSize: 18, fontWeight: '500' },
+  headerTitle: { color: '#002D62', fontSize: 22, fontWeight: 'bold' },
   scrollContent: { padding: 20 },
   
   // تصميم البطاقة الخضراء
