@@ -1,14 +1,12 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { StyleSheet, View, Text, ScrollView, Image, TouchableOpacity, StatusBar, Dimensions, ActivityIndicator, Alert } from 'react-native';
+import { StyleSheet, View, Text, ScrollView, TouchableOpacity, StatusBar, ActivityIndicator, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Truck, ChevronLeft, Package, Home, Inbox } from 'lucide-react-native';
+import { Truck, ChevronLeft, Package } from 'lucide-react-native';
 import { db, auth } from '../../api/firebaseConfig';
 import { collection, query, where, getDocs, writeBatch } from 'firebase/firestore';
 import { useFocusEffect } from 'expo-router';
 import AppHeader from '@/src/components/AppHeader';
 import { formatRemainingTime } from '@/src/utils/timeRemaining';
-
-const { width } = Dimensions.get('window');
 
 const MyMovesScreen = ({ onNavigate }: any) => {
   const [activeOrders, setActiveOrders] = useState<any[]>([]);

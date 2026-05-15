@@ -1,14 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import {StyleSheet, View,Text,Image,ScrollView,TouchableOpacity,StatusBar,Dimensions, ActivityIndicator} from 'react-native';
+import {StyleSheet, View,Text,Image,ScrollView,TouchableOpacity,StatusBar, ActivityIndicator} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { MapPin, Navigation, Star, MessageCircle, Check, Clock, Truck, Bell, User, Home } from 'lucide-react-native';
+import { MapPin, Navigation, Star, MessageCircle, Check, Clock } from 'lucide-react-native';
 import MovesBottomNavigation from '../MovesBottomNavigation';
 import { db } from '../../api/firebaseConfig';
 import { doc, getDoc } from 'firebase/firestore';
 import AppHeader from '@/src/components/AppHeader';
 import { formatRemainingTime } from '@/src/utils/timeRemaining';
-
-const { width } = Dimensions.get('window');
 
 const TrackingScreen = ({ onBack, orderId }: any) => {
   const [driver, setDriver] = useState<any>(null);
@@ -196,19 +194,6 @@ const TimelineStep = ({ title, subtitle, status }: TimelineStepProps) => {
 };
 
 // مكون عنصر التنقل السفلي
-interface NavItemProps {
-  icon: React.ReactNode;
-  label: string;
-  active?: boolean;
-}
-
-const NavItem = ({ icon, label, active }: NavItemProps) => (
-  <TouchableOpacity style={[styles.navItem, active && styles.navItemActive]}>
-    {icon}
-    <Text style={[styles.navLabel, active && styles.navLabelActive]}>{label}</Text>
-  </TouchableOpacity>
-);
-
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f8f9fa' },
   header: {

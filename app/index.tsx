@@ -1,5 +1,5 @@
-import { Redirect } from 'expo-router';
+import IndexRedirect from '@/src/components/Navigation/IndexRedirect';
 
 export default function IndexPage() {
-  return <Redirect href="/(tabs)" />;
+  return <IndexRedirect />;
 }
