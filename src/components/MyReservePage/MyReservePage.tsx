@@ -173,14 +173,9 @@ const MyMovesScreen = ({ onNavigate }: any) => {
                   </View>
 
                   <View style={styles.cardFooter}>
-                    <View style={styles.primaryActions}>
-                      <TouchableOpacity style={[styles.actionButton, styles.detailsButton]} onPress={() => onNavigate && onNavigate(`/order-details?orderId=${order.id}`)}>
-                        <Text style={styles.detailsButtonText}>تفاصيل الطلب</Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity style={[styles.actionButton, styles.trackButton]} onPress={() => onNavigate && onNavigate(`/tracking?orderId=${order.id}`)}>
-                        <Text style={styles.trackButtonText}>تتبع الشحنة</Text>
-                      </TouchableOpacity>
-                    </View>
+                    <TouchableOpacity style={[styles.actionButton, styles.trackButton]} onPress={() => onNavigate && onNavigate(`/tracking?orderId=${order.id}`)}>
+                      <Text style={styles.trackButtonText}>تتبع الشحنة</Text>
+                    </TouchableOpacity>
                     <TouchableOpacity style={[styles.actionButton, styles.cancelOrderBtn]} onPress={() => {
                       Alert.alert(
                         'إلغاء الطلب',
@@ -247,7 +242,6 @@ const MyMovesScreen = ({ onNavigate }: any) => {
                   details={`${orderDate} • من ${fromCity} إلى ${toCity}`} 
                   icon={<Package color="#9ca3af" size={22} />} 
                   status={order.status}
-                  onPress={() => onNavigate && onNavigate(`/order-details?orderId=${order.id}`)}
                 />
               );
             })
@@ -264,12 +258,10 @@ interface PastMoveItemProps {
   details: string;
   icon: React.ReactNode;
   status?: string;
-  onPress?: () => void;
 }
 
-const PastMoveItem = ({ title, details, icon, status, onPress }: PastMoveItemProps) => (
-  <TouchableOpacity style={styles.pastCard} onPress={onPress} activeOpacity={0.85}>
-    <ChevronLeft color="#bdc7db" size={20} />
+const PastMoveItem = ({ title, details, icon, status }: PastMoveItemProps) => (
+  <View style={styles.pastCard}>
     <View style={styles.pastCardContent}>
       <View style={styles.pastCardHeader}>
         <View style={styles.completedBadge}>
@@ -282,7 +274,7 @@ const PastMoveItem = ({ title, details, icon, status, onPress }: PastMoveItemPro
     <View style={styles.pastIconContainer}>
       {icon}
     </View>
-  </TouchableOpacity>
+  </View>
 );
 
 const styles = StyleSheet.create({
@@ -449,11 +441,6 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: '#f3f4f5',
   },
-  primaryActions: {
-    flexDirection: 'row-reverse',
-    alignItems: 'center',
-    gap: 10,
-  },
   actionButton: {
     minHeight: 44,
     borderRadius: 12,
@@ -487,7 +474,7 @@ const styles = StyleSheet.create({
     color: '#555',
   },
   trackButton: {
-    flex: 1,
+    width: '100%',
     backgroundColor: '#145300',
     paddingHorizontal: 12,
     paddingVertical: 10,
@@ -498,19 +485,6 @@ const styles = StyleSheet.create({
   },
   trackButtonText: {
     color: '#fff',
-    fontWeight: '700',
-    fontSize: 14,
-  },
-  detailsButton: {
-    flex: 1,
-    backgroundColor: '#e8f7e1',
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderWidth: 1,
-    borderColor: '#aff592',
-  },
-  detailsButtonText: {
-    color: '#145300',
     fontWeight: '700',
     fontSize: 14,
   },

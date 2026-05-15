@@ -79,7 +79,7 @@ const CompanyDetailsScreen = () => {
               <View style={styles.iconCircle}><ArrowRightLeft color="#15803d" size={20} /></View>
             </View>
           </View>
-
+ 
           <View style={styles.serviceRow}>
             <View style={styles.serviceCard}>
               <Package color="#16a34a" size={24} style={{ marginBottom: 12 }} />
