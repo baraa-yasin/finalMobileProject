@@ -8,7 +8,6 @@ export default function OrderDetailsPage() {
   return (
     <OrderDetailsScreen
       orderId={orderId as string}
-      onBack={() => router.back()}
       onTrack={() => router.push(`/tracking?orderId=${orderId || ''}`)}
     />
   );

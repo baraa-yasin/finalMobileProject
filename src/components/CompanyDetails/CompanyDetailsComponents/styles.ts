@@ -1,0 +1,103 @@
+import { StyleSheet } from 'react-native';
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: '#f8f9fa' },
+  scrollContent: { paddingBottom: 100 },
+
+  heroContainer: { height: 300, width: '100%', position: 'relative' },
+  heroImage: { width: '100%', height: '100%' },
+  heroGradient: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.3)',
+  },
+
+  infoCard: {
+    backgroundColor: '#fff',
+    marginHorizontal: 24,
+    marginTop: -64,
+    borderRadius: 24,
+    padding: 32,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.08,
+    shadowRadius: 50,
+    elevation: 10,
+  },
+  logoContainer: {
+    width: 80,
+    height: 80,
+    backgroundColor: '#aff592',
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+  },
+  logoText: { fontSize: 30, fontWeight: '900', fontStyle: 'italic', color: '#0b3a00' },
+  companyName: { fontSize: 24, fontWeight: '800', color: '#0b3a00', textAlign: 'center' },
+  companyStatus: { color: '#41493c', fontWeight: '500', marginBottom: 24 },
+  companyDescription: { color: '#41493c', textAlign: 'center', lineHeight: 22, fontSize: 14 },
+
+  statsRow: {
+    flexDirection: 'row',
+    marginTop: 40,
+    paddingTop: 32,
+    borderTopWidth: 1,
+    borderTopColor: '#f3f4f5',
+    width: '100%',
+  },
+  statItem: { flex: 1, alignItems: 'center' },
+  statBorder: { borderLeftWidth: 1, borderRightWidth: 1, borderColor: '#f3f4f5' },
+  statValue: { fontSize: 20, fontWeight: '800', color: '#0b3a00' },
+  statLabel: { fontSize: 10, color: '#71717a', fontWeight: 'bold', marginTop: 4, textTransform: 'uppercase' },
+  ratingRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+
+  section: { paddingHorizontal: 24, marginTop: 48 },
+  sectionTitle: { fontSize: 20, fontWeight: 'bold', color: '#0b3a00', marginBottom: 24, textAlign: 'right' },
+  fleetCard: {
+    backgroundColor: '#f3f4f5',
+    padding: 24,
+    borderRadius: 20,
+    flexDirection: 'row-reverse',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  fleetInfo: { alignItems: 'flex-end' },
+  fleetTitle: { fontWeight: 'bold', color: '#0b3a00', fontSize: 16 },
+  fleetSubtitle: { fontSize: 12, color: '#41493c', marginTop: 4 },
+  fleetIcons: { flexDirection: 'row', gap: 8 },
+  iconCircle: { width: 40, height: 40, backgroundColor: '#fff', borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
+
+  serviceRow: { flexDirection: 'row', gap: 16 },
+  serviceCard: { flex: 1, backgroundColor: '#fff', padding: 20, borderRadius: 20, alignItems: 'flex-end', elevation: 2 },
+  serviceTitle: { fontWeight: 'bold', fontSize: 14, color: '#0b3a00' },
+  serviceSubtitle: { fontSize: 11, color: '#71717a', marginTop: 4 },
+
+  complianceCard: { backgroundColor: '#0b3a00', marginHorizontal: 24, marginTop: 48, borderRadius: 24, padding: 24 },
+  complianceTitle: { color: '#fff', fontWeight: 'bold', fontSize: 18, marginBottom: 24, textAlign: 'right' },
+  badgeRow: { flexDirection: 'row-reverse', flexWrap: 'wrap', gap: 12 },
+  badge: { flexDirection: 'row-reverse', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.1)', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 50, gap: 8 },
+  badgeText: { color: '#fff', fontSize: 12, fontWeight: '600' },
+
+  contactCard: { backgroundColor: '#e7e8e9', marginHorizontal: 24, marginTop: 48, borderRadius: 24, padding: 32 },
+  contactItem: { flexDirection: 'row-reverse', alignItems: 'center', gap: 16, marginBottom: 16 },
+  contactIcon: { width: 40, height: 40, backgroundColor: '#fff', borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
+  contactText: { alignItems: 'flex-end' },
+  contactLabel: { fontSize: 12, color: '#71717a' },
+  contactValue: { fontWeight: 'bold', fontSize: 14 },
+  socialRow: { flexDirection: 'row', gap: 12, marginTop: 8 },
+  socialButton: {
+    flex: 1,
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    flexDirection: 'row-reverse',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  socialText: { color: '#0b3a00', fontWeight: '800', fontSize: 13 },
+});
+
+export default styles;
