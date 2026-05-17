@@ -63,7 +63,14 @@ const styles = StyleSheet.create({
     borderColor: '#eef9ea',
     elevation: 2,
   },
-  name: { fontSize: 24, fontWeight: '900', color: '#111827', textAlign: 'center', marginBottom: 14 },
+  nameButton: {
+    flexDirection: 'row-reverse',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    marginBottom: 14,
+  },
+  name: { fontSize: 24, fontWeight: '900', color: '#111827', textAlign: 'center' },
   infoRow: {
     flexDirection: 'row-reverse',
     alignItems: 'center',
@@ -105,6 +112,64 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 2,
+  },
+  editNameOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.48)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 24,
+  },
+  editNameCard: {
+    width: '100%',
+    backgroundColor: '#fff',
+    borderRadius: 22,
+    padding: 20,
+  },
+  editNameTitle: {
+    color: '#0b3a00',
+    fontSize: 20,
+    fontWeight: '900',
+    textAlign: 'right',
+    marginBottom: 16,
+  },
+  editNameInput: {
+    backgroundColor: '#f8f9fa',
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 13,
+    fontSize: 16,
+    color: '#111827',
+    borderWidth: 1,
+    borderColor: '#eef0ef',
+  },
+  editNameActions: {
+    flexDirection: 'row-reverse',
+    gap: 10,
+    marginTop: 18,
+  },
+  editNameButton: {
+    flex: 1,
+    minHeight: 46,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  saveNameButton: {
+    backgroundColor: '#145300',
+  },
+  cancelNameButton: {
+    backgroundColor: '#eef0ef',
+  },
+  saveNameText: {
+    color: '#fff',
+    fontWeight: '900',
+    fontSize: 15,
+  },
+  cancelNameText: {
+    color: '#374151',
+    fontWeight: '900',
+    fontSize: 15,
   },
 });
 

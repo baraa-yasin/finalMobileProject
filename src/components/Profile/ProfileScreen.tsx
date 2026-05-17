@@ -14,6 +14,7 @@ const getPhotoStorageKey = (uid?: string) => `profile-photo-${uid || 'guest'}`;
 export default function ProfileScreen() {
   const [loading, setLoading] = useState(true);
   const [savingImage, setSavingImage] = useState(false);
+  const [savingName, setSavingName] = useState(false);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [photoUri, setPhotoUri] = useState<string | null>(null);
@@ -55,6 +56,24 @@ export default function ProfileScreen() {
     setPhotoUri(uri);
     await AsyncStorage.setItem(getPhotoStorageKey(user.uid), uri);
     await setDoc(doc(db, 'users', user.uid), { localPhotoUri: uri }, { merge: true });
+  };
+
+  const saveProfileName = async (nextName: string) => {
+    const user = auth.currentUser;
+    const trimmedName = nextName.trim();
+
+    if (!user || !trimmedName) return;
+
+    try {
+      setSavingName(true);
+      await setDoc(doc(db, 'users', user.uid), { name: trimmedName }, { merge: true });
+      setName(trimmedName);
+    } catch (error) {
+      console.error('Error updating profile name:', error);
+      Alert.alert('خطأ', 'تعذر تحديث الاسم. حاول مرة أخرى.');
+    } finally {
+      setSavingName(false);
+    }
   };
 
   const pickImage = async () => {
@@ -121,8 +140,10 @@ export default function ProfileScreen() {
           email={email}
           photoUri={photoUri}
           savingImage={savingImage}
+          savingName={savingName}
           onPickImage={pickImage}
           onTakePhoto={takePhoto}
+          onSaveName={saveProfileName}
         />
       )}
 

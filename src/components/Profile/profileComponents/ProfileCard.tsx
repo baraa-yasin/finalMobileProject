@@ -1,6 +1,14 @@
 import React, { useState } from 'react';
-import { ActivityIndicator, Image as RNImage, Modal, Text, TouchableOpacity, View } from 'react-native';
-import { Camera, Image as ImageIcon, Mail, X, User } from 'lucide-react-native';
+import {
+  ActivityIndicator,
+  Image as RNImage,
+  Modal,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { Camera, Image as ImageIcon, Mail, Pencil, User, X } from 'lucide-react-native';
 import styles from './styles';
 
 type ProfileCardProps = {
@@ -8,8 +16,10 @@ type ProfileCardProps = {
   email: string;
   photoUri: string | null;
   savingImage: boolean;
+  savingName: boolean;
   onPickImage: () => void;
   onTakePhoto: () => void;
+  onSaveName: (name: string) => Promise<void>;
 };
 
 export default function ProfileCard({
@@ -17,10 +27,25 @@ export default function ProfileCard({
   email,
   photoUri,
   savingImage,
+  savingName,
   onPickImage,
   onTakePhoto,
+  onSaveName,
 }: ProfileCardProps) {
   const [previewVisible, setPreviewVisible] = useState(false);
+  const [editNameVisible, setEditNameVisible] = useState(false);
+  const [draftName, setDraftName] = useState(name);
+
+  const openNameEditor = () => {
+    setDraftName(name);
+    setEditNameVisible(true);
+  };
+
+  const handleSaveName = async () => {
+    if (!draftName.trim()) return;
+    await onSaveName(draftName);
+    setEditNameVisible(false);
+  };
 
   return (
     <View style={styles.content}>
@@ -50,7 +75,10 @@ export default function ProfileCard({
           </TouchableOpacity>
         </View>
 
-        <Text style={styles.name}>{name}</Text>
+        <TouchableOpacity style={styles.nameButton} onPress={openNameEditor} activeOpacity={0.75}>
+          <Pencil color="#145300" size={16} />
+          <Text style={styles.name}>{name}</Text>
+        </TouchableOpacity>
 
         <View style={styles.infoRow}>
           <Mail color="#145300" size={18} />
@@ -64,6 +92,42 @@ export default function ProfileCard({
             <X color="#fff" size={24} />
           </TouchableOpacity>
           {photoUri ? <RNImage source={{ uri: photoUri }} style={styles.previewImage} resizeMode="contain" /> : null}
+        </View>
+      </Modal>
+
+      <Modal visible={editNameVisible} transparent animationType="fade" onRequestClose={() => setEditNameVisible(false)}>
+        <View style={styles.editNameOverlay}>
+          <View style={styles.editNameCard}>
+            <Text style={styles.editNameTitle}>تعديل اسم المستخدم</Text>
+            <TextInput
+              style={styles.editNameInput}
+              value={draftName}
+              onChangeText={setDraftName}
+              placeholder="اسم المستخدم"
+              textAlign="right"
+              autoFocus
+            />
+            <View style={styles.editNameActions}>
+              <TouchableOpacity
+                style={[styles.editNameButton, styles.cancelNameButton]}
+                onPress={() => setEditNameVisible(false)}
+                disabled={savingName}
+              >
+                <Text style={styles.cancelNameText}>إلغاء</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.editNameButton, styles.saveNameButton]}
+                onPress={handleSaveName}
+                disabled={savingName || !draftName.trim()}
+              >
+                {savingName ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <Text style={styles.saveNameText}>حفظ</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
         </View>
       </Modal>
     </View>
