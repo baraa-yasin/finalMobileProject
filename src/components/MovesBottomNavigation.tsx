@@ -10,7 +10,7 @@ type NavigationItem = {
 };
 
 export const navItems: NavigationItem[] = [
-  { icon: "home", label: "الرئيسية", route: "/" },
+  { icon: "home", label: "الرئيسية", route: "/home" },
   { icon: "local-shipping", label: "نقلاتي", route: "/moves" },
   { icon: "notifications-none", label: "التنبيهات", route: "/notifications" },
   { icon: "account-circle", label: "الحساب", route: "/profile" },

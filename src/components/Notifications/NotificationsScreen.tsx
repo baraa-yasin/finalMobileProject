@@ -6,15 +6,7 @@ import { collection, getDocs, onSnapshot, query, where } from 'firebase/firestor
 import { auth, db } from '@/src/api/firebaseConfig';
 import AppHeader from '@/src/components/AppHeader';
 import { notifyOrderArrival } from '@/src/utils/orderArrival';
-import {
-  getCreatedTime,
-  NotificationItem,
-  NotificationsHeader,
-  NotificationsList,
-  NotificationsState,
-  styles,
-  summarizeItems,
-} from './notificationsComponents';
+import { getCreatedTime, NotificationItem, NotificationsHeader, NotificationsList, NotificationsState, styles, summarizeItems, } from './notificationsComponents';
 
 export default function NotificationsScreen() {
   const router = useRouter();

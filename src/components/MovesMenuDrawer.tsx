@@ -43,7 +43,7 @@ export default function MovesMenuDrawer({
   const items = useMemo(
     () => [
       // نرتب القائمة بحيث التنبيهات والحساب آخر شي
-      ...navItems.filter((i) => i.route === '/'),
+      ...navItems.filter((i) => i.route === '/home'),
       ...navItems.filter((i) => i.route === '/moves'),
       ...drawerOnlyItems,
       ...navItems.filter((i) => i.route === '/notifications'),

@@ -6,13 +6,7 @@ import { collection, getDocs, query, where } from 'firebase/firestore';
 import { auth, db } from '@/src/api/firebaseConfig';
 import AppHeader from '@/src/components/AppHeader';
 import { cacheOrders, getCachedOrderHistory, getOrderSortTime } from '@/src/storage/ordersCache';
-import {
-  OrderListItem,
-  OrdersList,
-  OrdersListHeader,
-  OrdersListState,
-  styles,
-} from './orderListComponents';
+import { OrderListItem, OrdersList, OrdersListHeader, OrdersListState, styles } from './orderListComponents';
 
 export default function OrdersListScreen() {
   const router = useRouter();

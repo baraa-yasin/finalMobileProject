@@ -19,10 +19,16 @@ type TrackingScreenProps = {
   onBack?: () => void;
 };
 
+const getDateTime = (value: any) => {
+  const date = value?.toDate ? value.toDate() : value ? new Date(value) : null;
+  return date && !Number.isNaN(date.getTime()) ? date.getTime() : null;
+};
+
 const TrackingScreen = ({ orderId }: TrackingScreenProps) => {
   const [driver, setDriver] = useState<any>(null);
   const [order, setOrder] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [trackingStartedAt] = useState(Date.now());
   const [now, setNow] = useState(Date.now());
 
   useEffect(() => {
@@ -64,8 +70,11 @@ const TrackingScreen = ({ orderId }: TrackingScreenProps) => {
     fetchDriverData();
   }, [orderId]);
 
+  const startTime = getDateTime(order?.createdAt) ?? getDateTime(order?.scheduledTime) ?? trackingStartedAt;
   const remainingMs = order?.arrivalAt ? Math.max(new Date(order.arrivalAt).getTime() - now, 0) : 0;
   const remainingLabel = order?.arrivalAt ? formatRemainingTime(remainingMs) : 'غير محدد';
+  const elapsedSeconds = Math.max(Math.floor((now - startTime) / 1000), 0);
+  const shipmentCompleted = order?.status === 'completed' || Boolean(order?.arrivalAt && remainingMs <= 0);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -76,7 +85,7 @@ const TrackingScreen = ({ orderId }: TrackingScreenProps) => {
         <ArrivalTimerCard remainingMs={remainingMs} remainingLabel={remainingLabel} />
         <TrackingMapCard />
         <DriverTrackingCard driver={driver} loading={loading} />
-        <ShipmentTimeline />
+        <ShipmentTimeline elapsedSeconds={elapsedSeconds} completed={shipmentCompleted} />
       </ScrollView>
 
       <MovesBottomNavigation />

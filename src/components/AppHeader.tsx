@@ -15,7 +15,7 @@ export default function AppHeader() {
           <Menu color="#0b3a00" size={24} />
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={() => router.push('/' as any)} activeOpacity={0.85}>
+        <TouchableOpacity onPress={() => router.push('/home' as any)} activeOpacity={0.85}>
           <Text style={styles.logo}>SwiftShift</Text>
         </TouchableOpacity>
 

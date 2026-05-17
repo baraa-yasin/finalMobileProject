@@ -4,7 +4,7 @@ import { FontAwesome } from '@expo/vector-icons';
 import { Mail, MapPin } from 'lucide-react-native';
 import styles from './styles';
 
-const SUPPORT_EMAIL = 'swiftshift@gmail.com';
+const SUPPORT_EMAIL = 'swiftshift114@gmail.com';
 const FACEBOOK_URL = 'https://www.facebook.com/profile.php?id=61589707718313';
 const INSTAGRAM_URL = 'https://www.instagram.com/swiftshift114/';
 

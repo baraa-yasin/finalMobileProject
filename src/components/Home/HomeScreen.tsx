@@ -2,6 +2,7 @@ import React from 'react';
 import { ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AppHeader from '@/src/components/AppHeader';
+import MovesBottomNavigation from '@/src/components/MovesBottomNavigation';
 import { BookingCard, CompanyDetailsButton, PromoCard, styles } from './homeScreenComponents';
 
 type HomeScreenProps = {
@@ -18,6 +19,8 @@ const HomeScreen = ({ onNavigate }: HomeScreenProps) => {
         <BookingCard onNavigate={onNavigate} />
         <CompanyDetailsButton onNavigate={onNavigate} />
       </ScrollView>
+
+      <MovesBottomNavigation />
     </SafeAreaView>
   );
 };

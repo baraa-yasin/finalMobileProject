@@ -80,7 +80,7 @@ export default function OrderDetailsScreen({ orderId, onTrack }: Props) {
         ) : (
           <>
             <StatusSummary orderId={order?.id} status={order?.status} />
-            <RouteCard pickupAddress={order?.pickup?.address} dropoffAddress={order?.dropoff?.address} />
+            <RouteCard pickupAddress={order?.pickup?.address} dropoffAddress={order?.pickup?.address} />
             <ScheduleInfo scheduledTime={order?.scheduledTime} />
             <InventoryCard items={items} />
             <DriverCard driver={driver} />
@@ -88,7 +88,8 @@ export default function OrderDetailsScreen({ orderId, onTrack }: Props) {
         )}
       </ScrollView>
 
-      <TrackBottomAction onTrack={onTrack} />
+      {order?.status === 'active' ? <TrackBottomAction onTrack={onTrack} /> : null}
     </SafeAreaView>
   );
 }
+

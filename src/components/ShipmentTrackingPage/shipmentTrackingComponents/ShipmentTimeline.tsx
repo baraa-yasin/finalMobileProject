@@ -4,7 +4,16 @@ import { Clock } from 'lucide-react-native';
 import TimelineStep from './TimelineStep';
 import styles from './styles';
 
-export default function ShipmentTimeline() {
+type ShipmentTimelineProps = {
+  elapsedSeconds: number;
+  completed: boolean;
+};
+
+export default function ShipmentTimeline({ elapsedSeconds, completed }: ShipmentTimelineProps) {
+  const orderReceivedStatus = completed || elapsedSeconds >= 10 ? 'completed' : 'active';
+  const driverOnWayStatus = completed || elapsedSeconds >= 50 ? 'completed' : elapsedSeconds >= 20 ? 'active' : 'upcoming';
+  const pickupArrivalStatus = completed ? 'completed' : elapsedSeconds >= 50 ? 'active' : 'upcoming';
+
   return (
     <View style={styles.timelineCard}>
       <View style={styles.timelineHeader}>
@@ -17,23 +26,23 @@ export default function ShipmentTimeline() {
 
         <TimelineStep
           title="تم استلام الطلب"
-          subtitle="تم تأكيد طلبك وجدولة الموعد بنجاح"
-          status="completed"
+          subtitle="يتم تأكيد طلبك وجدولة الموعد بعد 10 ثواني"
+          status={orderReceivedStatus}
         />
         <TimelineStep
           title="السائق في الطريق"
-          subtitle="السائق الآن يتوجه إلى نقطة التحميل الخاصة بك"
-          status="active"
+          subtitle="السائق يتوجه إلى نقطة التحميل بعد 20 ثانية"
+          status={driverOnWayStatus}
         />
         <TimelineStep
           title="الوصول لموقع التحميل"
-          subtitle="سيتم التحديث عند وصول الشاحنة للموقع"
-          status="upcoming"
+          subtitle="يتم تحديث هذه المرحلة بعد 50 ثانية"
+          status={pickupArrivalStatus}
         />
         <TimelineStep
           title="اكتملت عملية النقل"
-          subtitle="سيتم التحديث فور انتهاء المهمة"
-          status="upcoming"
+          subtitle="تكتمل العملية عند انتهاء عداد الوصول"
+          status={completed ? 'completed' : 'upcoming'}
         />
       </View>
     </View>

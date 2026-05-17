@@ -32,7 +32,7 @@ const RegisterScreen: React.FC = () => {
       try {
         await registerMutation.mutateAsync(values);
         Alert.alert('نجاح', 'تم إنشاء الحساب بنجاح');
-        router.replace('/(tabs)' as any);
+        router.replace('/home' as any);
       } catch (error) {
         Alert.alert('خطأ', getErrorMessage(error));
       }

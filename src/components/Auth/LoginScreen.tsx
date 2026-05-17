@@ -24,7 +24,7 @@ const LoginScreen: React.FC = () => {
     async (values: LoginFormValues) => {
       try {
         await loginMutation.mutateAsync(values);
-        router.replace('/(tabs)' as any);
+        router.replace('/home' as any);
       } catch (error) {
         Alert.alert('خطأ في الدخول', getErrorMessage(error, 'البريد أو كلمة المرور غير صحيحة'));
       }
